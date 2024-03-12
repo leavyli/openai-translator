@@ -529,6 +529,8 @@ function InnerTranslator(props: IInnerTranslatorProps) {
         }
         const engine = getEngine(settings.provider)
         engine.getModel().then((model) => {
+            // to-do debug
+            console.debug(`model: ${model}`)
             setTranslateDeps((prev) => {
                 return {
                     ...prev,

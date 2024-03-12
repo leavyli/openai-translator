@@ -184,10 +184,10 @@ function ThemeTypeSelector({ value, onChange, onBlur }: IThemeTypeSelectorProps)
             value={
                 value
                     ? [
-                          {
-                              id: value,
-                          },
-                      ]
+                        {
+                            id: value,
+                        },
+                    ]
                     : []
             }
             onChange={(params) => {
@@ -220,10 +220,10 @@ function LanguageDetectionEngineSelector({ value, onChange, onBlur }: ILanguageD
             value={
                 value
                     ? [
-                          {
-                              id: value,
-                          },
-                      ]
+                        {
+                            id: value,
+                        },
+                    ]
                     : []
             }
             onChange={(params) => {
@@ -322,9 +322,9 @@ const ttsProviderOptions: {
     label: string
     id: TTSProvider
 }[] = [
-    { label: 'Edge TTS', id: 'EdgeTTS' },
-    { label: 'System Default', id: 'WebSpeech' },
-]
+        { label: 'Edge TTS', id: 'EdgeTTS' },
+        { label: 'System Default', id: 'WebSpeech' },
+    ]
 
 function TTSVoicesSettings({ value, onChange, onBlur }: ITTSVoicesSettingsProps) {
     console.debug('render tts voices settings')
@@ -708,11 +708,11 @@ function ProxyProtocolSelector({ value, onChange, onBlur }: IProxyProtocolProps)
             value={
                 value
                     ? [
-                          {
-                              id: value,
-                              label: options.find((option) => option.id === value)?.label || 'HTTP',
-                          },
-                      ]
+                        {
+                            id: value,
+                            label: options.find((option) => option.id === value)?.label || 'HTTP',
+                        },
+                    ]
                     : undefined
             }
             onChange={(params) => {
@@ -749,17 +749,17 @@ function Ii18nSelector({ value, onChange, onBlur }: Ii18nSelectorProps) {
             value={
                 value
                     ? [
-                          {
-                              id: value,
-                              label: options.find((option) => option.id === value)?.label || 'en',
-                          },
-                      ]
+                        {
+                            id: value,
+                            label: options.find((option) => option.id === value)?.label || 'en',
+                        },
+                    ]
                     : undefined
             }
             onChange={(params) => {
                 onChange?.(params.value[0].id as string)
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ;(i18n as any).changeLanguage(params.value[0].id as string)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    ; (i18n as any).changeLanguage(params.value[0].id as string)
             }}
             options={options}
         />
@@ -798,60 +798,60 @@ function APIModelSelector({ currentProvider, provider, apiKey, value, onChange, 
         }
         const engine = getEngine(provider)
         setIsLoading(true)
-        ;(async () => {
-            try {
-                const models = await engine.listModels(apiKey)
-                setOptions([
-                    ...models.map((model: IModel) => ({
-                        label: (
-                            <div
-                                style={{
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    gap: 3,
-                                }}
-                            >
+            ; (async () => {
+                try {
+                    const models = await engine.listModels(apiKey)
+                    setOptions([
+                        ...models.map((model: IModel) => ({
+                            label: (
                                 <div
                                     style={{
-                                        fontSize: '14px',
-                                        color: theme.colors.contentPrimary,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: 3,
                                     }}
                                 >
-                                    {model.name}
-                                </div>
-                                {model.description && (
                                     <div
                                         style={{
-                                            fontSize: '12px',
-                                            color: theme.colors.contentTertiary,
+                                            fontSize: '14px',
+                                            color: theme.colors.contentPrimary,
                                         }}
                                     >
-                                        {model.description}
+                                        {model.name}
                                     </div>
-                                )}
-                            </div>
-                        ),
-                        id: model.id,
-                    })),
-                    ...(engine.supportCustomModel()
-                        ? [
-                              {
-                                  id: CUSTOM_MODEL_ID,
-                                  label: t('Custom'),
-                              },
-                          ]
-                        : []),
-                ])
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            } catch (e: any) {
-                if (provider === 'ChatGPT' && e.message && e.message.includes('not login')) {
-                    setIsChatGPTNotLogin(true)
+                                    {model.description && (
+                                        <div
+                                            style={{
+                                                fontSize: '12px',
+                                                color: theme.colors.contentTertiary,
+                                            }}
+                                        >
+                                            {model.description}
+                                        </div>
+                                    )}
+                                </div>
+                            ),
+                            id: model.id,
+                        })),
+                        ...(engine.supportCustomModel()
+                            ? [
+                                {
+                                    id: CUSTOM_MODEL_ID,
+                                    label: t('Custom'),
+                                },
+                            ]
+                            : []),
+                    ])
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                } catch (e: any) {
+                    if (provider === 'ChatGPT' && e.message && e.message.includes('not login')) {
+                        setIsChatGPTNotLogin(true)
+                    }
+                    setErrMsg(e.message)
+                } finally {
+                    setIsLoading(false)
                 }
-                setErrMsg(e.message)
-            } finally {
-                setIsLoading(false)
-            }
-        })()
+            })()
     }, [apiKey, currentProvider, provider, refreshFlag, t, theme.colors.contentPrimary, theme.colors.contentTertiary])
 
     return (
@@ -873,10 +873,10 @@ function APIModelSelector({ currentProvider, provider, apiKey, value, onChange, 
                     value={
                         value
                             ? [
-                                  {
-                                      id: value,
-                                  },
-                              ]
+                                {
+                                    id: value,
+                                },
+                            ]
                             : undefined
                     }
                     onChange={(params) => {
@@ -1089,28 +1089,28 @@ const useStyles = createUseStyles({
     footer: (props: IThemedStyleProps) =>
         props.isDesktopApp
             ? {
-                  zIndex: 999,
-                  color: props.theme.colors.contentSecondary,
-                  position: 'fixed',
-                  width: '100%',
-                  height: '42px',
-                  cursor: 'pointer',
-                  left: '0',
-                  bottom: '0',
-                  paddingLeft: '6px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  background: props.themeType === 'dark' ? 'rgba(31, 31, 31, 0.5)' : 'rgba(255, 255, 255, 0.5)',
-                  backdropFilter: 'blur(10px)',
-              }
+                zIndex: 999,
+                color: props.theme.colors.contentSecondary,
+                position: 'fixed',
+                width: '100%',
+                height: '42px',
+                cursor: 'pointer',
+                left: '0',
+                bottom: '0',
+                paddingLeft: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                background: props.themeType === 'dark' ? 'rgba(31, 31, 31, 0.5)' : 'rgba(255, 255, 255, 0.5)',
+                backdropFilter: 'blur(10px)',
+            }
             : {
-                  color: props.theme.colors.contentSecondary,
-                  position: 'absolute',
-                  cursor: 'pointer',
-                  bottom: '16px',
-                  left: '6px',
-                  lineHeight: '1',
-              },
+                color: props.theme.colors.contentSecondary,
+                position: 'absolute',
+                cursor: 'pointer',
+                bottom: '16px',
+                left: '6px',
+                lineHeight: '1',
+            },
 })
 
 const useHotkeyRecorderStyles = createUseStyles({
@@ -1337,32 +1337,32 @@ function ProviderSelector({ value, onChange, hasPromotion }: IProviderSelectorPr
 
     const options = utils.isDesktopApp()
         ? ([
-              { label: 'OpenAI', id: 'OpenAI' },
-              { label: `Ollama (${t('Local Model')})`, id: 'Ollama' },
-              { label: 'Gemini', id: 'Gemini' },
-              // { label: 'ChatGPT (Web)', id: 'ChatGPT' },
-              { label: 'Azure', id: 'Azure' },
-              { label: 'MiniMax', id: 'MiniMax' },
-              { label: 'Moonshot', id: 'Moonshot' },
-              { label: 'Groq', id: 'Groq' },
-              { label: 'Claude', id: 'Claude' },
-          ] as {
-              label: string
-              id: Provider
-          }[])
+            { label: 'OpenAI', id: 'OpenAI' },
+            { label: `Ollama (${t('Local Model')})`, id: 'Ollama' },
+            { label: 'Gemini', id: 'Gemini' },
+            // { label: 'ChatGPT (Web)', id: 'ChatGPT' },
+            { label: 'Azure', id: 'Azure' },
+            { label: 'MiniMax', id: 'MiniMax' },
+            { label: 'Moonshot', id: 'Moonshot' },
+            { label: 'Groq', id: 'Groq' },
+            { label: 'Claude', id: 'Claude' },
+        ] as {
+            label: string
+            id: Provider
+        }[])
         : ([
-              { label: 'OpenAI', id: 'OpenAI' },
-              { label: 'ChatGPT (Web)', id: 'ChatGPT' },
-              { label: 'Gemini', id: 'Gemini' },
-              { label: 'Azure', id: 'Azure' },
-              { label: 'MiniMax', id: 'MiniMax' },
-              { label: 'Moonshot', id: 'Moonshot' },
-              { label: 'Groq', id: 'Groq' },
-              { label: 'Claude', id: 'Claude' },
-          ] as {
-              label: string
-              id: Provider
-          }[])
+            { label: 'OpenAI', id: 'OpenAI' },
+            { label: 'ChatGPT (Web)', id: 'ChatGPT' },
+            { label: 'Gemini', id: 'Gemini' },
+            { label: 'Azure', id: 'Azure' },
+            { label: 'MiniMax', id: 'MiniMax' },
+            { label: 'Moonshot', id: 'Moonshot' },
+            { label: 'Groq', id: 'Groq' },
+            { label: 'Claude', id: 'Claude' },
+        ] as {
+            label: string
+            id: Provider
+        }[])
 
     return (
         <Select
@@ -1482,7 +1482,7 @@ export function InnerSettings({
 
     useEffect(() => {
         if (settings) {
-            ;(async () => {
+            ; (async () => {
                 if (isTauri) {
                     const { isEnabled: autostartIsEnabled } = await import('@tauri-apps/plugin-autostart')
                     settings.runAtStartup = await autostartIsEnabled()
@@ -1659,7 +1659,7 @@ export function InnerSettings({
     const getI18nPromotionContent = (contentItem: II18nPromotionContentItem) => {
         let c =
             contentItem.content[
-                (values.i18n as keyof II18nPromotionContent | undefined) ?? contentItem.fallback_language
+            (values.i18n as keyof II18nPromotionContent | undefined) ?? contentItem.fallback_language
             ]
         if (!c) {
             c = contentItem.content[contentItem.fallback_language]
@@ -2262,7 +2262,38 @@ export function InnerSettings({
                                 label={t('API Model')}
                                 required={values.provider === 'Gemini'}
                             >
-                                <APIModelSelector provider='Gemini' currentProvider={values.provider} onBlur={onBlur} />
+                                <APIModelSelector provider='Gemini' currentProvider={values.provider} 
+                                apiKey= {values.geminiAPIKey}
+                                onBlur={onBlur} />
+                            </FormItem>
+                            <div
+                                style={{
+                                    display: values.geminiAPIModel === CUSTOM_MODEL_ID ? 'block' : 'none',
+                                }}
+                            >
+                                <FormItem
+                                    name='geminiCustomModelName'
+                                    label={t('Custom Model Name')}
+                                    required={values.provider === 'Gemini' && values.geminiAPIModel === CUSTOM_MODEL_ID}
+                                >
+                                    <Input autoComplete='off' size='compact' />
+                                </FormItem>
+                            </div>
+                            <FormItem
+                                name='geminiAPIURL'
+                                label={t('API URL')}
+                                required={values.provider === 'Gemini'}
+                                caption={t('Generally, there is no need to modify this item.')}
+                            >
+                                <Input size='compact' onBlur={onBlur} />
+                            </FormItem>
+                            <FormItem
+                                name='geminiAPIURLPath'
+                                label={t('API URL Path')}
+                                required={values.provider === 'Gemini'}
+                                caption={t('Generally, there is no need to modify this item.')}
+                            >
+                                <Input size='compact' onBlur={onBlur} />
                             </FormItem>
                         </div>
                         <div

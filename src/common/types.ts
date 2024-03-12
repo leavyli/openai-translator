@@ -66,6 +66,9 @@ export interface ISettings {
     miniMaxAPIModel: string
     geminiAPIKey: string
     geminiAPIModel: string
+    geminiAPIURL: string
+    geminiAPIURLPath: string
+    geminiCustomModelName: string
     moonshotAPIKey: string
     moonshotAPIModel: string
     autoTranslate: boolean
