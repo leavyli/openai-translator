@@ -53,8 +53,6 @@ export class Gemini extends AbstractEngine {
         // const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}`
         // to-do  需要处理末尾是否有/
         const url =`${settings.geminiAPIURL}${model}${settings.geminiAPIURLPath}${apiKey}`
-        // to-do remove
-        console.debug(`gemini url :${url}, model:${model} apiKey:${apiKey}`)
 
         const headers = {
             'Content-Type': 'application/json',

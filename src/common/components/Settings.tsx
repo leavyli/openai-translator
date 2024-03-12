@@ -2283,7 +2283,7 @@ export function InnerSettings({
                                 name='geminiAPIURL'
                                 label={t('API URL')}
                                 required={values.provider === 'Gemini'}
-                                caption={t('Generally, there is no need to modify this item.')}
+                                caption={t('Generally, there is no need to modify this item. finally eg:https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}')}
                             >
                                 <Input size='compact' onBlur={onBlur} />
                             </FormItem>
