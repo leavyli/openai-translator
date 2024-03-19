@@ -1320,7 +1320,8 @@ interface IProviderSelectorProps {
     hasPromotion?: boolean
 }
 
-function ProviderSelector({ value, onChange, hasPromotion }: IProviderSelectorProps) {
+// to-do 导出ProviderSelector
+export function ProviderSelector({ value, onChange, hasPromotion }: IProviderSelectorProps) {
     const { theme } = useTheme()
     const { t } = useTranslation()
 
