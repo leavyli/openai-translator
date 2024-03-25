@@ -58,7 +58,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { actionService } from '../services/action'
 import { ActionManager } from './ActionManager'
 import { GrMoreVertical } from 'react-icons/gr'
-import { StatefulPopover } from 'baseui-sd/popover'
+import { StatefulPopover,PLACEMENT} from 'baseui-sd/popover'
 import { StatefulMenu } from 'baseui-sd/menu'
 import { IconType } from 'react-icons'
 import { GiPlatform } from 'react-icons/gi'
@@ -145,6 +145,13 @@ const useStyles = createUseStyles({
         alignItems: 'center',
         gap: '3px',
     },
+    // to-do 选择模型的样式
+    'pickMedelSelect': {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 5,
+    },
     'popupCardHeaderContainer': (props: IThemedStyleProps) =>
         props.isDesktopApp
             ? {
@@ -210,6 +217,19 @@ const useStyles = createUseStyles({
         },
     }),
     'popupCardHeaderActionsContainer': (props: IThemedStyleProps) => ({
+        'box-sizing': 'border-box',
+        'display': 'flex',
+        'flexShrink': 0,
+        'flexDirection': 'row',
+        'alignItems': 'center',
+        'padding': props.showLogo ? '5px 10px' : '5px 10px 5px 0px',
+        'gap': '10px',
+        '@media screen and (max-width: 460px)': {
+            padding: props.isDesktopApp ? '5px 0' : undefined,
+            gap: props.isDesktopApp ? '5px' : undefined,
+        },
+    }),
+    'popupCardSelectActionsContainer': (props: IThemedStyleProps) => ({
         'box-sizing': 'border-box',
         'display': 'flex',
         'flexShrink': 0,
@@ -642,6 +662,10 @@ function InnerTranslator(props: IInnerTranslatorProps) {
 
     const { width: languagesSelectorWidth = 0 } = useResizeObserver<HTMLDivElement>({ ref: languagesSelectorRef })
 
+    // to-do 添加选择模型的ref
+    const pickModelSelectorRef =  useRef<HTMLDivElement>(null)
+    const { width: pickModelSelectorWidth = 0 } = useResizeObserver<HTMLDivElement>({ ref: pickModelSelectorRef })
+
     const headerActionButtonsRef = useRef<HTMLDivElement>(null)
 
     const { width: headerActionButtonsWidth = 0 } = useResizeObserver<HTMLDivElement>({ ref: headerActionButtonsRef })
@@ -673,11 +697,13 @@ function InnerTranslator(props: IInnerTranslatorProps) {
             const iconWidth = 32
             const iconWithTextWidth = activateActionElem ? activateActionElem.clientWidth : 105
             const iconGap = 5
+            // to-do 计算放置多少个选项
             let count = Math.floor(
                 (headerWidth -
                     paddingWidth -
                     logoWidth -
                     languagesSelectorWidth -
+                    pickModelSelectorWidth -
                     10 -
                     iconWithTextWidth * (hasActivateAction ? 1 : 0)) /
                 (iconGap + iconWidth)
@@ -1554,9 +1580,10 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                         {showLogo ? (
                             <LogoWithText ref={logoWithTextRef} />
                         ) : (
-                            <div style={{ flexShrink: 0, marginRight: 'auto' }} />
+                            <div style={{ flexShrink: 0, marginRight: '1px' }} />
                         )}
-                        <div className={styles.popupCardHeaderActionsContainer}>
+                        {/* to-do 调整样式 */}
+                        <div className={styles.pickMedelSelect} ref={pickModelSelectorRef}>
                             <ModelPicker settings={settings}></ModelPicker>
                         </div>
                         <div className={styles.popupCardHeaderActionsContainer} ref={languagesSelectorRef}>
@@ -1697,7 +1724,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                                     autoFocus={false}
                                     triggerType='hover'
                                     showArrow
-                                    placement='bottom'
+                                    placement= {PLACEMENT['bottomRight']}
                                     content={
                                         <StatefulMenu
                                             initialState={{
@@ -1757,6 +1784,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                                                                 fontWeight: 500,
                                                             }}
                                                         >
+                                                            {/* to-do 这里的样式 */}
                                                             <GiPlatform />
                                                             {t('Action Manager')}
                                                         </div>
