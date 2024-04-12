@@ -145,7 +145,6 @@ const useStyles = createUseStyles({
         alignItems: 'center',
         gap: '3px',
     },
-    // to-do 选择模型的样式
     'pickMedelSelect': {
         display: 'flex',
         flexDirection: 'row',
@@ -619,10 +618,14 @@ function InnerTranslator(props: IInnerTranslatorProps) {
     const [highlightWords, setHighlightWords] = useState<string[]>([])
 
     useEffect(() => {
+
         if (!highlightRef.current?.highlight) {
             return
         }
         if (selectedWord) {
+            // to-do  这里好像可以去掉
+            setIsWordMode(true)
+
             highlightRef.current.highlight.highlight = [selectedWord]
         } else {
             highlightRef.current.highlight.highlight = [...highlightWords]
@@ -662,7 +665,6 @@ function InnerTranslator(props: IInnerTranslatorProps) {
 
     const { width: languagesSelectorWidth = 0 } = useResizeObserver<HTMLDivElement>({ ref: languagesSelectorRef })
 
-    // to-do 添加选择模型的ref
     const pickModelSelectorRef =  useRef<HTMLDivElement>(null)
     const { width: pickModelSelectorWidth = 0 } = useResizeObserver<HTMLDivElement>({ ref: pickModelSelectorRef })
 
@@ -697,7 +699,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
             const iconWidth = 32
             const iconWithTextWidth = activateActionElem ? activateActionElem.clientWidth : 105
             const iconGap = 5
-            // to-do 计算放置多少个选项
+            //计算放置多少个选项
             let count = Math.floor(
                 (headerWidth -
                     paddingWidth -
@@ -910,9 +912,16 @@ function InnerTranslator(props: IInnerTranslatorProps) {
         500
     )
 
+    //检查单词是否已经收藏
     const checkWordCollection = useCallback(async () => {
         try {
-            const item = await vocabularyService.getItem(editableText.trim())
+            let item: VocabularyItem | undefined;
+            if (selectedWord) {
+                item = await vocabularyService.getItem(selectedWord.trim())
+            } else {
+                item = await vocabularyService.getItem(editableText.trim())
+            }
+
             if (item) {
                 await vocabularyService.putItem({
                     ...item,
@@ -925,7 +934,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
         } catch (e) {
             console.error(e)
         }
-    }, [editableText])
+    }, [editableText, selectedWord])
 
     useEffect(() => {
         setTranslatedLines(translatedText.split('\n'))
@@ -1021,15 +1030,31 @@ function InnerTranslator(props: IInnerTranslatorProps) {
         async (remove: boolean) => {
             try {
                 if (remove) {
-                    const wordInfo = await vocabularyService.getItem(editableText.trim())
+                    let wordInfo :VocabularyItem | undefined;
+                    if (selectedWord) {
+                        wordInfo = await vocabularyService.getItem(selectedWord.trim())
+                    } else {
+                        wordInfo = await vocabularyService.getItem(editableText.trim())
+                    }
+
                     await vocabularyService.deleteItem(wordInfo?.word ?? '')
                     setCollectedWordTotal((t: number) => t - 1)
                     setIsCollectedWord(false)
                 } else {
+                    let word = editableText
+                    let description = translatedText.slice(editableText.length + 1)
+                    // 如果是高亮选择
+                    if (selectedWord) {
+                        word = selectedWord.trim()
+                        // to-do 这里缺少了添加语言种类
+                        description = translatedLines[0].slice(word.length+1) + "\n"  + editableText + '\n' + translatedLines.slice(2).join("\n")
+                    }
+
+
                     await vocabularyService.putItem({
-                        word: editableText,
+                        word: word,
                         reviewCount: 1,
-                        description: translatedText.slice(editableText.length + 1), // separate string after first '\n'
+                        description: description, // separate string after first '\n'
                         updatedAt: new Date().valueOf().toString(),
                         createdAt: new Date().valueOf().toString(),
                     })
@@ -1060,6 +1085,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
         autoCollectRef.current = autoCollect
     }, [autoCollect])
 
+    //翻译的内容
     const translateText = useDeepCompareCallback(
         async (selectedWord: string, signal: AbortSignal) => {
             const { text, sourceLang, targetLang, action } = translateDeps
@@ -1582,7 +1608,6 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                         ) : (
                             <div style={{ flexShrink: 0, marginRight: '1px' }} />
                         )}
-                        {/* to-do 调整样式 */}
                         <div className={styles.pickMedelSelect} ref={pickModelSelectorRef}>
                             <ModelPicker settings={settings}></ModelPicker>
                         </div>
@@ -1784,7 +1809,6 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                                                                 fontWeight: 500,
                                                             }}
                                                         >
-                                                            {/* to-do 这里的样式 */}
                                                             <GiPlatform />
                                                             {t('Action Manager')}
                                                         </div>
@@ -2130,7 +2154,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                                                     translatedLines.map((line, i) => {
                                                         return (
                                                             <div className={styles.paragraph} key={`p-${i}`}>
-                                                                {isWordMode && i === 0 ? (
+                                                                {(isWordMode && i === 0) || (selectedWord && i === 0) ? (
                                                                     <div
                                                                         style={{
                                                                             display: 'flex',
