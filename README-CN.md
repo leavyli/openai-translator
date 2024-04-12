@@ -60,6 +60,12 @@
   <img width="800" src="https://user-images.githubusercontent.com/1206493/223200182-6a1d2a02-3fe0-4723-bdae-99d8b7212a33.gif" />
 </p>
 
+# 修改的界面
+<p align="center">
+  <img width="800" src="./img/new.PNG" />
+</p>
+
+
 # 特性
 
 1. 支持三种翻译模式：翻译、润色、总结
