@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import { CUSTOM_MODEL_ID } from '../constants'
 import { fetchSSE, getSettings } from '../utils'
 import { AbstractEngine } from './abstract-engine'
 import { IMessageRequest, IModel } from './interfaces'
@@ -22,7 +23,11 @@ const SAFETY_SETTINGS = [
     },
 ]
 
-export class Gemini extends AbstractEngine {
+export class Gemini extends AbstractEngine {    
+    supportCustomModel(): boolean {
+        return true
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async listModels(apiKey_: string | undefined): Promise<IModel[]> {
         return [
@@ -35,6 +40,9 @@ export class Gemini extends AbstractEngine {
 
     async getModel() {
         const settings = await getSettings()
+        if (settings.geminiAPIModel === CUSTOM_MODEL_ID) {
+            return settings.geminiCustomModelName
+        }
         return settings.geminiAPIModel
     }
 
@@ -42,7 +50,10 @@ export class Gemini extends AbstractEngine {
         const settings = await getSettings()
         const apiKey = settings.geminiAPIKey
         const model = await this.getModel()
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}`
+        // const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?key=${apiKey}`
+        // to-do  需要处理末尾是否有/
+        const url =`${settings.geminiAPIURL}${model}${settings.geminiAPIURLPath}${apiKey}`
+
         const headers = {
             'Content-Type': 'application/json',
             'User-Agent':

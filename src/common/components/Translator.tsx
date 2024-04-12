@@ -32,7 +32,7 @@ import {
     setSettings,
     isBrowserExtensionContentScript,
 } from '../utils'
-import { InnerSettings } from './Settings'
+import { InnerSettings, ProviderSelector } from './Settings'
 import { containerID, popupCardInnerContainerId } from '../../browser-extension/content_script/consts'
 import Dropzone from 'react-dropzone'
 import { RecognizeResult, createWorker } from 'tesseract.js'
@@ -58,7 +58,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import { actionService } from '../services/action'
 import { ActionManager } from './ActionManager'
 import { GrMoreVertical } from 'react-icons/gr'
-import { StatefulPopover } from 'baseui-sd/popover'
+import { StatefulPopover,PLACEMENT} from 'baseui-sd/popover'
 import { StatefulMenu } from 'baseui-sd/menu'
 import { IconType } from 'react-icons'
 import { GiPlatform } from 'react-icons/gi'
@@ -145,40 +145,46 @@ const useStyles = createUseStyles({
         alignItems: 'center',
         gap: '3px',
     },
+    'pickMedelSelect': {
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 5,
+    },
     'popupCardHeaderContainer': (props: IThemedStyleProps) =>
         props.isDesktopApp
             ? {
-                  'position': 'fixed',
-                  'backdropFilter': 'blur(10px)',
-                  'zIndex': 1,
-                  'left': 0,
-                  'top': 0,
-                  'width': '100%',
-                  'boxSizing': 'border-box',
-                  'padding': navigator.userAgent.includes('Mac OS X') ? '30px 16px 8px' : '8px 16px',
-                  'background': props.themeType === 'dark' ? 'rgba(31, 31, 31, 0.5)' : 'rgba(255, 255, 255, 0.5)',
-                  'display': 'flex',
-                  'flexDirection': 'row',
-                  'flexFlow': 'row nowrap',
-                  'cursor': 'move',
-                  'alignItems': 'center',
-                  'borderBottom': `1px solid ${props.theme.colors.borderTransparent}`,
-                  '-ms-user-select': 'none',
-                  '-webkit-user-select': 'none',
-                  'user-select': 'none',
-              }
+                'position': 'fixed',
+                'backdropFilter': 'blur(10px)',
+                'zIndex': 1,
+                'left': 0,
+                'top': 0,
+                'width': '100%',
+                'boxSizing': 'border-box',
+                'padding': navigator.userAgent.includes('Mac OS X') ? '30px 16px 8px' : '8px 16px',
+                'background': props.themeType === 'dark' ? 'rgba(31, 31, 31, 0.5)' : 'rgba(255, 255, 255, 0.5)',
+                'display': 'flex',
+                'flexDirection': 'row',
+                'flexFlow': 'row nowrap',
+                'cursor': 'move',
+                'alignItems': 'center',
+                'borderBottom': `1px solid ${props.theme.colors.borderTransparent}`,
+                '-ms-user-select': 'none',
+                '-webkit-user-select': 'none',
+                'user-select': 'none',
+            }
             : {
-                  'display': 'flex',
-                  'flexDirection': 'row',
-                  'cursor': 'move',
-                  'alignItems': 'center',
-                  'padding': '8px 16px',
-                  'borderBottom': `1px solid ${props.theme.colors.borderTransparent}`,
-                  'minWidth': '612px',
-                  '-ms-user-select': 'none',
-                  '-webkit-user-select': 'none',
-                  'user-select': 'none',
-              },
+                'display': 'flex',
+                'flexDirection': 'row',
+                'cursor': 'move',
+                'alignItems': 'center',
+                'padding': '8px 16px',
+                'borderBottom': `1px solid ${props.theme.colors.borderTransparent}`,
+                'minWidth': '612px',
+                '-ms-user-select': 'none',
+                '-webkit-user-select': 'none',
+                'user-select': 'none',
+            },
     'paragraph': {
         'margin': '0.5em 0',
         '-ms-user-select': 'text',
@@ -210,6 +216,19 @@ const useStyles = createUseStyles({
         },
     }),
     'popupCardHeaderActionsContainer': (props: IThemedStyleProps) => ({
+        'box-sizing': 'border-box',
+        'display': 'flex',
+        'flexShrink': 0,
+        'flexDirection': 'row',
+        'alignItems': 'center',
+        'padding': props.showLogo ? '5px 10px' : '5px 10px 5px 0px',
+        'gap': '10px',
+        '@media screen and (max-width: 460px)': {
+            padding: props.isDesktopApp ? '5px 0' : undefined,
+            gap: props.isDesktopApp ? '5px' : undefined,
+        },
+    }),
+    'popupCardSelectActionsContainer': (props: IThemedStyleProps) => ({
         'box-sizing': 'border-box',
         'display': 'flex',
         'flexShrink': 0,
@@ -467,6 +486,10 @@ export interface ITranslatorProps extends IInnerTranslatorProps {
     engine: Styletron
 }
 
+interface IModelPickerProps {
+    settings: ISettings;
+}
+
 export function Translator(props: ITranslatorProps) {
     const { theme } = useTheme()
 
@@ -519,7 +542,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (settings?.i18n !== (i18n as any).language) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ;(i18n as any).changeLanguage(settings?.i18n)
+            ; (i18n as any).changeLanguage(settings?.i18n)
         }
     }, [i18n, settings.i18n])
 
@@ -595,10 +618,14 @@ function InnerTranslator(props: IInnerTranslatorProps) {
     const [highlightWords, setHighlightWords] = useState<string[]>([])
 
     useEffect(() => {
+
         if (!highlightRef.current?.highlight) {
             return
         }
         if (selectedWord) {
+            // to-do  这里好像可以去掉
+            setIsWordMode(true)
+
             highlightRef.current.highlight.highlight = [selectedWord]
         } else {
             highlightRef.current.highlight.highlight = [...highlightWords]
@@ -638,6 +665,9 @@ function InnerTranslator(props: IInnerTranslatorProps) {
 
     const { width: languagesSelectorWidth = 0 } = useResizeObserver<HTMLDivElement>({ ref: languagesSelectorRef })
 
+    const pickModelSelectorRef =  useRef<HTMLDivElement>(null)
+    const { width: pickModelSelectorWidth = 0 } = useResizeObserver<HTMLDivElement>({ ref: pickModelSelectorRef })
+
     const headerActionButtonsRef = useRef<HTMLDivElement>(null)
 
     const { width: headerActionButtonsWidth = 0 } = useResizeObserver<HTMLDivElement>({ ref: headerActionButtonsRef })
@@ -669,14 +699,16 @@ function InnerTranslator(props: IInnerTranslatorProps) {
             const iconWidth = 32
             const iconWithTextWidth = activateActionElem ? activateActionElem.clientWidth : 105
             const iconGap = 5
+            //计算放置多少个选项
             let count = Math.floor(
                 (headerWidth -
                     paddingWidth -
                     logoWidth -
                     languagesSelectorWidth -
+                    pickModelSelectorWidth -
                     10 -
                     iconWithTextWidth * (hasActivateAction ? 1 : 0)) /
-                    (iconGap + iconWidth)
+                (iconGap + iconWidth)
             )
             count = hasActivateAction ? count + 1 : count
             if (count <= 0) {
@@ -870,7 +902,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
 
     useLazyEffect(
         () => {
-            ;(async () => {
+            ; (async () => {
                 // use dynamic import to reduce bundle size
                 const { countTokens } = await import('../token')
                 setTokenCount(countTokens(editableText, settings?.apiModel))
@@ -880,9 +912,16 @@ function InnerTranslator(props: IInnerTranslatorProps) {
         500
     )
 
+    //检查单词是否已经收藏
     const checkWordCollection = useCallback(async () => {
         try {
-            const item = await vocabularyService.getItem(editableText.trim())
+            let item: VocabularyItem | undefined;
+            if (selectedWord) {
+                item = await vocabularyService.getItem(selectedWord.trim())
+            } else {
+                item = await vocabularyService.getItem(editableText.trim())
+            }
+
             if (item) {
                 await vocabularyService.putItem({
                     ...item,
@@ -895,7 +934,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
         } catch (e) {
             console.error(e)
         }
-    }, [editableText])
+    }, [editableText, selectedWord])
 
     useEffect(() => {
         setTranslatedLines(translatedText.split('\n'))
@@ -991,15 +1030,31 @@ function InnerTranslator(props: IInnerTranslatorProps) {
         async (remove: boolean) => {
             try {
                 if (remove) {
-                    const wordInfo = await vocabularyService.getItem(editableText.trim())
+                    let wordInfo :VocabularyItem | undefined;
+                    if (selectedWord) {
+                        wordInfo = await vocabularyService.getItem(selectedWord.trim())
+                    } else {
+                        wordInfo = await vocabularyService.getItem(editableText.trim())
+                    }
+
                     await vocabularyService.deleteItem(wordInfo?.word ?? '')
                     setCollectedWordTotal((t: number) => t - 1)
                     setIsCollectedWord(false)
                 } else {
+                    let word = editableText
+                    let description = translatedText.slice(editableText.length + 1)
+                    // 如果是高亮选择
+                    if (selectedWord) {
+                        word = selectedWord.trim()
+                        // to-do 这里缺少了添加语言种类
+                        description = translatedLines[0].slice(word.length+1) + "\n"  + editableText + '\n' + translatedLines.slice(2).join("\n")
+                    }
+
+
                     await vocabularyService.putItem({
-                        word: editableText,
+                        word: word,
                         reviewCount: 1,
-                        description: translatedText.slice(editableText.length + 1), // separate string after first '\n'
+                        description: description, // separate string after first '\n'
                         updatedAt: new Date().valueOf().toString(),
                         createdAt: new Date().valueOf().toString(),
                     })
@@ -1030,6 +1085,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
         autoCollectRef.current = autoCollect
     }, [autoCollect])
 
+    //翻译的内容
     const translateText = useDeepCompareCallback(
         async (selectedWord: string, signal: AbortSignal) => {
             const { text, sourceLang, targetLang, action } = translateDeps
@@ -1041,9 +1097,9 @@ function InnerTranslator(props: IInnerTranslatorProps) {
             const actionStrItem = actionMode
                 ? actionStrItems[actionMode]
                 : {
-                      beforeStr: 'Processing...',
-                      afterStr: 'Processed',
-                  }
+                    beforeStr: 'Processing...',
+                    afterStr: 'Processed',
+                }
             const beforeTranslate = () => {
                 let actionStr = actionStrItem.beforeStr
                 if (actionMode === 'translate' && sourceLang === targetLang) {
@@ -1056,7 +1112,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
             }
             const afterTranslate = (reason: string) => {
                 stopLoading()
-                if (reason !== 'stop') {
+                if (reason !== 'stop' && reason !== 'eos') {
                     if (reason === 'length' || reason === 'max_tokens') {
                         toast(t('Chars Limited'), {
                             duration: 5000,
@@ -1082,11 +1138,9 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                 }
             }
             beforeTranslate()
-            const cachedKey = `translate:${translateDeps.provider ?? ''}:${translateDeps.engineModel ?? ''}:${
-                action.id
-            }:${action.rolePrompt}:${action.commandPrompt}:${
-                action.outputRenderingFormat
-            }:${sourceLang}:${targetLang}:${text}:${selectedWord}:${translationFlag}`
+            const cachedKey = `translate:${translateDeps.provider ?? ''}:${translateDeps.engineModel ?? ''}:${action.id
+                }:${action.rolePrompt}:${action.commandPrompt}:${action.outputRenderingFormat
+                }:${sourceLang}:${targetLang}:${text}:${selectedWord}:${translationFlag}`
             const cachedValue = cache.get(cachedKey)
             if (cachedValue) {
                 afterTranslate('stop')
@@ -1214,63 +1268,63 @@ function InnerTranslator(props: IInnerTranslatorProps) {
             return
         }
         let unlisten: (() => void) | undefined = undefined
-        ;(async () => {
-            unlisten = await listen('tauri://file-drop', async (e: Event<string>) => {
-                if (e.payload.length !== 1) {
-                    alert('Only one file can be uploaded at a time.')
-                    return
-                }
-
-                const filePath = e.payload[0]
-
-                if (!filePath) {
-                    return
-                }
-
-                const fileExtension = filePath.split('.').pop()?.toLowerCase() || ''
-                if (!['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-                    alert('invalid file type')
-                    return
-                }
-
-                const worker = createWorker()
-
-                const binaryFile = await readFile(filePath)
-
-                const file = new Blob([binaryFile.buffer], {
-                    type: `image/${fileExtension}`,
-                })
-
-                const fileSize = file.size / 1024 / 1024
-                if (fileSize > 1) {
-                    alert('File size must be less than 1MB')
-                    return
-                }
-
-                setTranslateDeps((v) => {
-                    return {
-                        ...v,
-                        text: '',
+            ; (async () => {
+                unlisten = await listen('tauri://file-drop', async (e: Event<string>) => {
+                    if (e.payload.length !== 1) {
+                        alert('Only one file can be uploaded at a time.')
+                        return
                     }
+
+                    const filePath = e.payload[0]
+
+                    if (!filePath) {
+                        return
+                    }
+
+                    const fileExtension = filePath.split('.').pop()?.toLowerCase() || ''
+                    if (!['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+                        alert('invalid file type')
+                        return
+                    }
+
+                    const worker = createWorker()
+
+                    const binaryFile = await readFile(filePath)
+
+                    const file = new Blob([binaryFile.buffer], {
+                        type: `image/${fileExtension}`,
+                    })
+
+                    const fileSize = file.size / 1024 / 1024
+                    if (fileSize > 1) {
+                        alert('File size must be less than 1MB')
+                        return
+                    }
+
+                    setTranslateDeps((v) => {
+                        return {
+                            ...v,
+                            text: '',
+                        }
+                    })
+                    setIsOCRProcessing(true)
+
+                    await (await worker).loadLanguage('eng+chi_sim+chi_tra+jpn+rus+kor')
+                    await (await worker).initialize('eng+chi_sim+chi_tra+jpn+rus+kor')
+
+                    const { data } = await (await worker).recognize(file)
+
+                    if (activateAction) {
+                        const newTranslateDeps = await getTranslateDeps(data.text, activateAction)
+
+                        setTranslateDeps(newTranslateDeps)
+                    }
+
+                    setIsOCRProcessing(false)
+
+                    await (await worker).terminate()
                 })
-                setIsOCRProcessing(true)
-
-                await (await worker).loadLanguage('eng+chi_sim+chi_tra+jpn+rus+kor')
-                await (await worker).initialize('eng+chi_sim+chi_tra+jpn+rus+kor')
-
-                const { data } = await (await worker).recognize(file)
-
-                if (activateAction) {
-                    const newTranslateDeps = await getTranslateDeps(data.text, activateAction)
-
-                    setTranslateDeps(newTranslateDeps)
-                }
-
-                setIsOCRProcessing(false)
-
-                await (await worker).terminate()
-            })
-        })()
+            })()
 
         return () => {
             unlisten?.()
@@ -1524,6 +1578,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                 paddingBottom: showSettings ? '0px' : '42px',
             }}
         >
+
             {showSettings && (
                 <InnerSettings
                     onSave={(oldSettings) => {
@@ -1551,8 +1606,11 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                         {showLogo ? (
                             <LogoWithText ref={logoWithTextRef} />
                         ) : (
-                            <div style={{ flexShrink: 0, marginRight: 'auto' }} />
+                            <div style={{ flexShrink: 0, marginRight: '1px' }} />
                         )}
+                        <div className={styles.pickMedelSelect} ref={pickModelSelectorRef}>
+                            <ModelPicker settings={settings}></ModelPicker>
+                        </div>
                         <div className={styles.popupCardHeaderActionsContainer} ref={languagesSelectorRef}>
                             <div className={styles.from}>
                                 <Select
@@ -1691,7 +1749,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                                     autoFocus={false}
                                     triggerType='hover'
                                     showArrow
-                                    placement='bottom'
+                                    placement= {PLACEMENT['bottomRight']}
                                     content={
                                         <StatefulMenu
                                             initialState={{
@@ -1727,11 +1785,11 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                                                             >
                                                                 {action.icon
                                                                     ? React.createElement(
-                                                                          (mdIcons as Record<string, IconType>)[
-                                                                              action.icon
-                                                                          ],
-                                                                          { size: 15 }
-                                                                      )
+                                                                        (mdIcons as Record<string, IconType>)[
+                                                                        action.icon
+                                                                        ],
+                                                                        { size: 15 }
+                                                                    )
                                                                     : undefined}
                                                                 {action.mode ? t(action.name) : action.name}
                                                             </div>
@@ -2054,7 +2112,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                                         ) : errorMessage ? (
                                             <span key={'2'}>😢</span>
                                         ) : translateControllerRef.current?.signal.aborted &&
-                                          translateControllerRef.current?.signal.reason === 'stop' ? (
+                                            translateControllerRef.current?.signal.reason === 'stop' ? (
                                             <span key={'3'}>⏹️</span>
                                         ) : (
                                             <span key={'4'}>👍</span>
@@ -2082,7 +2140,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                                         >
                                             <div>
                                                 {currentTranslateMode === 'explain-code' ||
-                                                activateAction?.outputRenderingFormat === 'markdown' ? (
+                                                    activateAction?.outputRenderingFormat === 'markdown' ? (
                                                     <>
                                                         <Markdown>{translatedText}</Markdown>
                                                         {isLoading && <span className={styles.caret} />}
@@ -2096,7 +2154,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                                                     translatedLines.map((line, i) => {
                                                         return (
                                                             <div className={styles.paragraph} key={`p-${i}`}>
-                                                                {isWordMode && i === 0 ? (
+                                                                {(isWordMode && i === 0) || (selectedWord && i === 0) ? (
                                                                     <div
                                                                         style={{
                                                                             display: 'flex',
@@ -2224,8 +2282,8 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                         background: isScrolledToBottom
                             ? undefined
                             : themeType === 'dark'
-                            ? 'rgba(31, 31, 31, 0.5)'
-                            : undefined,
+                                ? 'rgba(31, 31, 31, 0.5)'
+                                : undefined,
                     }}
                 >
                     <Tooltip content={showSettings ? t('Go to Translator') : t('Go to Settings')} placement='right'>
@@ -2372,4 +2430,15 @@ function InnerTranslator(props: IInnerTranslatorProps) {
             <Toaster />
         </div>
     )
+}
+
+// 功能选择模型
+function ModelPicker({ settings }: IModelPickerProps) {
+    let [provider, setProvider] = useState(settings.provider);
+    return <ProviderSelector value={provider} hasPromotion={false} onChange={(p) => {
+        settings.provider = p
+        setProvider(p)
+        setSettings(settings)
+    }
+    } />
 }

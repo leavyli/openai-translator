@@ -54,6 +54,9 @@ const settingKeys: Record<keyof ISettings, number> = {
     moonshotAPIModel: 1,
     geminiAPIKey: 1,
     geminiAPIModel: 1,
+    geminiAPIURL: 1,
+    geminiAPIURLPath: 1,
+    geminiCustomModelName: 1,
     autoTranslate: 1,
     defaultTranslateMode: 1,
     defaultTargetLanguage: 1,
@@ -203,6 +206,12 @@ export async function getSettings(): Promise<ISettings> {
     }
     if (!settings.claudeAPIURLPath) {
         settings.claudeAPIURLPath = '/v1/messages'
+    }
+    if (!settings.geminiAPIURL) {
+        settings.geminiAPIURL = 'https://generativelanguage.googleapis.com/v1beta/models/'
+    }
+    if (!settings.geminiAPIURLPath) {
+        settings.geminiAPIURLPath = ':streamGenerateContent?key='
     }
     return settings
 }
