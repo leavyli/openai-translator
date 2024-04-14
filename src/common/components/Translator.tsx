@@ -756,6 +756,7 @@ function InnerTranslator(props: IInnerTranslatorProps) {
     }, [actions, activateAction?.id, displayedActionsMaxCount])
 
     const isTranslate = currentTranslateMode === 'translate'
+    // to-do selectedWord的逻辑
     useEffect(() => {
         if (!isTranslate) {
             setSelectedWord('')
@@ -1046,8 +1047,9 @@ function InnerTranslator(props: IInnerTranslatorProps) {
                     // 如果是高亮选择
                     if (selectedWord) {
                         word = selectedWord.trim()
-                        // to-do 这里缺少了添加语言种类
-                        description = translatedLines[0].slice(word.length+1) + "\n"  + editableText + '\n' + translatedLines.slice(2).join("\n")
+                        let sentence = editableText.trim()
+                        let transSentence = translatedText.replace(/\/(.*?)\//, `[$1]\n${sentence}\n`);
+                        description = '[' + sourceLang + ']' + transSentence.slice(selectedWord.length + 1)
                     }
 
 
